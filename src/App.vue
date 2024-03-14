@@ -8,7 +8,7 @@ import Game from './components/Game.vue';
     <div class="fixed left-0 right-0 top-0">
         <Navigation/>
     </div>
-    <div class="mt-6">
+    <div class="mt-20">
         <Game/>
     </div>
     
