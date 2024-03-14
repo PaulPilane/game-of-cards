@@ -101,7 +101,7 @@
           <img class="py-5" v-for="card in pile" :key="card.code" :src="card.image" :alt="card.code" />
           </div>
 
-          <img v-if="card" :src="card.image" alt="Image of card">
+          <img v-if="card && showDrawn" :src="card.image" alt="Image of card">
         </div>
 
       </div>
@@ -136,7 +136,8 @@ export default {
             pile: [] as ICard[],
             card: null as any, 
             showPile: false, 
-            nameOfButton: "Show"
+            nameOfButton: "Show",
+            showDrawn: false
         };
     },
     async created() {
@@ -179,6 +180,10 @@ export default {
                 this.findPlayerByName(playerName).hasPile = true;
                 this.findPlayerByName(playerName).score += Number(score);
                 this.cardsRemaining = response.data.remaining;
+                this.showDrawn = true;
+                this.showPile = false;
+                this.nameOfButton = "Show";
+                this.card = response.data.cards[0];
                 this.sort();
             }
             catch (error) {
@@ -232,14 +237,15 @@ export default {
           return this.players[index];
         },
         async cardsInHand(playerName: string) {
-          const deckId = sessionStorage.getItem("deckId");
-          let response = await axios.get(`https://www.deckofcardsapi.com/api/deck/${deckId}/pile/${playerName}/list/`);
-          this.responseData = response.data;
           console.log(this.findPlayerByName(playerName))
           if(this.findPlayerByName(playerName).hasPile){
+            const deckId = sessionStorage.getItem("deckId");
+          let response = await axios.get(`https://www.deckofcardsapi.com/api/deck/${deckId}/pile/${playerName}/list/`);
+          this.responseData = response.data;
             this.pile = response.data.piles[playerName].cards as ICard[];
             this.showPile = !this.showPile;
             this.nameOfButton = this.showPile ? "Hide" : "Show";
+            this.showDrawn = false;
             console.log(this.pile as ICard[]);
           }
           else {
@@ -254,6 +260,9 @@ export default {
             sessionStorage.setItem("deckId", deckId);
             this.cardsRemaining = response.data.remaining;
             this.players = [];
+            this.pile = [];
+            this.showPile = false;
+            this.showDrawn = false;
           }
           catch(error) {
             console.log(error)
