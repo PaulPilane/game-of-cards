@@ -69,7 +69,7 @@
                 <!-- The button will show cards in hnnd -->
                 <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
                 v-on:click="cardsInHand(player.playerName)">
-                {{ nameOfButton }} cards
+                Cards
                 </button>
               </div>
               <div  class="mr-6">
@@ -136,8 +136,8 @@ export default {
             pile: [] as ICard[],
             card: null as any, 
             showPile: false, 
-            nameOfButton: "Show",
-            showDrawn: false
+            showDrawn: false,
+            activePlayer: ''
         };
     },
     async created() {
@@ -182,7 +182,6 @@ export default {
                 this.cardsRemaining = response.data.remaining;
                 this.showDrawn = true;
                 this.showPile = false;
-                this.nameOfButton = "Show";
                 this.card = response.data.cards[0];
                 this.sort();
             }
@@ -243,8 +242,7 @@ export default {
           let response = await axios.get(`https://www.deckofcardsapi.com/api/deck/${deckId}/pile/${playerName}/list/`);
           this.responseData = response.data;
             this.pile = response.data.piles[playerName].cards as ICard[];
-            this.showPile = !this.showPile;
-            this.nameOfButton = this.showPile ? "Hide" : "Show";
+            this.showPile = !this.showPile
             this.showDrawn = false;
             console.log(this.pile as ICard[]);
           }
