@@ -2,9 +2,9 @@
 
 <!-- Calling an api -->
   <!-- <div>
-      {{ responseData }}
+      {{ responseData }} 
   </div> -->
-  <div class="">
+  <div class="transition-opacity duration-300" :class="{ 'opacity-50': showModal }">
   
   <div class="ml-5">
     <!-- <div class="grid grid-cols-4 gap-4 content-center" v-if="responseData">
@@ -123,8 +123,6 @@
             </div>
           </div>
 
-         
-          
         </div>
 
       </div>
@@ -133,12 +131,17 @@
 
 
 </div>
-
-<div>
-  <GameResults :winner="winner"/>
+<div class="flex justify-center items-center">
+  <div class="bg-white rounded shadow-lg w-96" v-if="showModal" title="Game Results" v-on:close="showModal = false">
+    <div class="p-4">
+      <GameResults :winner="winner || null" />
+    </div>
+    <div class="flex justify-end p-4">
+      <button class="mr-2 px-4 py-2 text-sm rounded text-white bg-red-500 focus:outline-none hover:bg-red-400" @click="showModal = false">Close</button>
+    </div>
+  </div>
 </div>
-
-</template>
+</template> 
 
 
 <!-- Script to consume api data using Axios -->
@@ -166,7 +169,8 @@ export default {
             showPile: false, 
             showDrawn: false,
             activePlayer: '',
-            winner: null as any
+            winner: null as IPlayer | 'draw' | null, 
+            showModal: false
         };
     },
     async created() {
@@ -304,6 +308,7 @@ export default {
         },
         assessWinner() {
           this.sort();
+          this.showModal = true;
           if(this.players.length > 1){
             if(this.players[0].score === this.players[1].score){
               this.winner = 'draw';
@@ -316,8 +321,6 @@ export default {
             this.winner = this.players.length === 1 ? null : this.players[0];
           }
         }
-
-        
     },
     components: { Player, Leaderboard, GameResults }
 };
