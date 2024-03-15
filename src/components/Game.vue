@@ -41,6 +41,12 @@
               Restart
             </button>
         </div>
+        <div>
+          <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              v-on:click="assessWinner">
+              End Game
+            </button>
+        </div>
         
         
      </div>
@@ -97,11 +103,28 @@
         </div>
 
         <div class="ml-2">
+          
+            <div v-if="pile.length > 0 && showPile ">
+              <h3>{{activePlayer}}'s cards in hand</h3>
+              <button class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded"
+              v-on:click="showPile = !showPile">
+              Hide
+              </button>
+            </div>
+
           <div class="grid grid-cols-4 gap-4 content-center" v-if="pile.length > 0 && showPile ">
           <img class="py-5" v-for="card in pile" :key="card.code" :src="card.image" :alt="card.code" />
           </div>
 
-          <img v-if="card && showDrawn" :src="card.image" alt="Image of card">
+          <div>
+            <div v-if="card && showDrawn">
+            <h3>{{activePlayer}}'s drawn card</h3>
+              <img  :src="card.image" alt="Image of card">
+            </div>
+          </div>
+
+         
+          
         </div>
 
       </div>
@@ -109,6 +132,10 @@
   </div>
 
 
+</div>
+
+<div>
+  <GameResults :winner="winner"/>
 </div>
 
 </template>
@@ -123,6 +150,7 @@ import Leaderboard from './Leaderboard.vue';
 // import {ref} from 'vue';
 import { IPlayer } from '../interfaces/player.interface'
 import { ICard } from '../interfaces/card.interface'
+import GameResults from './Game-results.vue';
 
 
 export default {
@@ -137,7 +165,8 @@ export default {
             card: null as any, 
             showPile: false, 
             showDrawn: false,
-            activePlayer: ''
+            activePlayer: '',
+            winner: null as any
         };
     },
     async created() {
@@ -182,6 +211,7 @@ export default {
                 this.cardsRemaining = response.data.remaining;
                 this.showDrawn = true;
                 this.showPile = false;
+                this.activePlayer = playerName;
                 this.card = response.data.cards[0];
                 this.sort();
             }
@@ -213,7 +243,7 @@ export default {
         }, 
         removePlayerByIndex(index: number){
           this.players.splice(index, 1);
-          return;
+          this.assessWinner();
         },
         addScore(player: IPlayer){
           player.score++;
@@ -242,8 +272,9 @@ export default {
           let response = await axios.get(`https://www.deckofcardsapi.com/api/deck/${deckId}/pile/${playerName}/list/`);
           this.responseData = response.data;
             this.pile = response.data.piles[playerName].cards as ICard[];
-            this.showPile = !this.showPile
+            this.showPile = true;
             this.showDrawn = false;
+            this.activePlayer = playerName;
             console.log(this.pile as ICard[]);
           }
           else {
@@ -261,6 +292,7 @@ export default {
             this.pile = [];
             this.showPile = false;
             this.showDrawn = false;
+            this.winner = null;
           }
           catch(error) {
             console.log(error)
@@ -269,11 +301,25 @@ export default {
         },
         sort() {
           this.players.sort((a, b) => b.score - a.score)
+        },
+        assessWinner() {
+          this.sort();
+          if(this.players.length > 1){
+            if(this.players[0].score === this.players[1].score){
+              this.winner = 'draw';
+            }
+            else {
+              this.winner = this.players[0];
+            }
+          }
+          else {
+            this.winner = this.players.length === 1 ? null : this.players[0];
+          }
         }
 
         
     },
-    components: { Player, Leaderboard }
+    components: { Player, Leaderboard, GameResults }
 };
 
 </script>
